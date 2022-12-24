@@ -1,28 +1,79 @@
+//Dear TA - Please note - there has been some changes to the classes between the sections,
+//This is because we were instructed to submit only the latest version
+//The previous version can be noted by uncommenting the lines*/
+
 package data;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Data {
     private int x = 0;
     private int y = 0;
-    
-    //Constructor
-    public Data (int x, int y) {
+    // If the boolean is false it means that an update in being made, and therefore
+    // can't calculate the diff
+    // If the boolean is true it means that the values are being read
+    private boolean valuesInUpdate = false;
+
+    // Use the lock mechanism to protect the data from being updated while reading
+    private final Lock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+
+    // Constructor
+    public Data(int x, int y) {
         this.x = x;
         this.y = y;
     }
-    
-    //Difference between the x and y values
+
+    // Difference between the x and y values
+    /* public int getDiff() { */
     public int getDiff() {
-        return (Math.abs(x-y));
+        lock.lock();
+        int returnValue;
+        // Wait for the update to complete
+        try {
+            while (!valuesInUpdate) {
+                condition.await();
+            }
+        } catch (InterruptedException e) {}
+        finally {
+            returnValue = Math.abs(x - y);
+            valuesInUpdate = false;
+            lock.unlock();
+        }
+        System.out.println("The values the diff is calculated with are:");
+        printValues();
+        return (returnValue);
     }
 
-    //Add dx to the x value, and dy to the y value
-    public void update(int dx, int dy) {
-        x = x + dx;
-        y = y + dy;
+    // Add dx to the x value, and dy to the y value
+    /* public void update(int dx, int dy) { */
+    public synchronized void update(int dx, int dy) {
+        lock.lock();
+        // Wait for the reading / other update to complete
+        try {
+            while (valuesInUpdate) {
+                condition.await();
+            }
+            //Now we are in a new update
+            valuesInUpdate=true;
+            System.out.println("The values before adding dx and dy are:");
+            printValues();
+            System.out.println("Values to add: dx=" + dx + ", dy=" + dy);
+            x = x + dx;
+            y = y + dy;
+            System.out.println("The values after adding dx and dy are:");
+            printValues();
+        } catch (InterruptedException e) {}
+        finally {
+            condition.signalAll();
+            lock.unlock();
+        }
     }
 
-    //Print the current values
+    // Print the current values
     public void printValues() {
-        System.out.println("x="+x+" y="+y);
+        System.out.println("x=" + x + " y=" + y);
     }
 }
