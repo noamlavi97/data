@@ -1,18 +1,16 @@
-## Getting Started
+# Data access - multiple threads
+This is an assignment from the course 'Java advanced programing', 20554 at the Open University of Israel
+Assignment 15, Q2 (semester 2023A).
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+The purpose of this assignment is to practice the use of multiple threads accessing secure data (read and write)
 
-## Folder Structure
+To run the project:
+1.   Clone
+2.   cd into the cloned directory
+3.   run.bat
 
-The workspace contains two folders by default, where:
-
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
-
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+To re-compile the project yourself:
+1. cd into src/data directory
+2. List all the files in the directory: `dir /s /B *.java > sources.txt`
+3. Compile: `javac -d . @sources.txt`
+4. Run using the command: `java data.Main'
