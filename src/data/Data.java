@@ -11,14 +11,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Data {
     private int x = 0;
     private int y = 0;
-    // If the boolean is false it means that an update in being made, and therefore
+    // If the boolean is true it means that an update in being made, and therefore
     // can't calculate the diff
-    // If the boolean is true it means that the values are being read
+    // If the boolean is false it means that the values are being read
     private boolean valuesInUpdate = false;
-    // If the boolean is false it means that the lock is because of another diff calculation
-    // and therefore we can calculate another diff simultaneously
-    // If the boolean is true it means that the lock is because an update is being made
-    private boolean lockedBecauseOfUpdate = false;
 
     // Use the lock mechanism to protect the data from being updated while reading
     private final Lock lock = new ReentrantLock();
@@ -37,7 +33,8 @@ public class Data {
         int returnValue;
         // Wait for the update to complete
         try {
-            while (!valuesInUpdate&&lockedBecauseOfUpdate) {
+            while (valuesInUpdate) {
+            /*while (valuesInUpdate) {*/
                 condition.await();
             }
         } catch (InterruptedException e) {}
@@ -45,7 +42,7 @@ public class Data {
             returnValue = Math.abs(x - y);
             System.out.println("The values the diff is calculated with are:");
             printValues();
-            valuesInUpdate = false;
+            /*valuesInUpdate = false;*/
             lock.unlock();
         }
         return (returnValue);
@@ -55,7 +52,6 @@ public class Data {
     /* public void update(int dx, int dy) { */
     public synchronized void update(int dx, int dy) {
         lock.lock();
-        lockedBecauseOfUpdate=true;
         // Wait for the reading / other update to complete
         try {
             while (valuesInUpdate) {
@@ -72,8 +68,8 @@ public class Data {
             printValues();
         } catch (InterruptedException e) {}
         finally {
+            /*The following line is for section C only*/
             valuesInUpdate=false;
-            lockedBecauseOfUpdate=false;
             condition.signalAll();
             lock.unlock();
         }
